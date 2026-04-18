@@ -1,0 +1,7 @@
+/obj
+/bin
+/logs
+/wwwroot
+/coverage
+.vs
+.env
