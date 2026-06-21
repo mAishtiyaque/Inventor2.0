@@ -32,13 +32,19 @@ function App() {
 
           <Route path="/inventory/products" element={
             <DashboardLayout>
-              <ProductsPage />
+              <ProductsPage tab="products" />
             </DashboardLayout>
           } />
 
           <Route path="/inventory/raw" element={
             <DashboardLayout>
-              <ProductsPage />
+              <ProductsPage tab="raw" />
+            </DashboardLayout>
+          } />
+
+          <Route path="/inventory/scrap" element={
+            <DashboardLayout>
+              <ProductsPage tab="scrap" />
             </DashboardLayout>
           } />
 

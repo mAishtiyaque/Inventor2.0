@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -30,6 +30,7 @@
   <PropertyGroup>
     <IISPath>C:\inetpub\Inventer.Api\</IISPath>
   </PropertyGroup>
+<!--
 	<Target Name="StopAppPool" BeforeTargets="Build">
 		<Exec Command="%windir%\system32\inetsrv\appcmd stop apppool /apppool.name:arsalanDOTNET" />
 	</Target>
@@ -44,4 +45,5 @@
 
     <Copy SourceFiles="@(BuiltFiles)" DestinationFolder="$(IISPath)%(RecursiveDir)" SkipUnchangedFiles="true" />
   </Target>
+-->
 </Project>

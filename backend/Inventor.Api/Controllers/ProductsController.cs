@@ -20,9 +20,9 @@ namespace Inventor.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProductDto>>> GetProducts()
+        public async Task<ActionResult<IEnumerable<ProductDto>>> GetProducts([FromQuery] string tab)
         {
-            var products = await _productService.GetProductsAsync();
+            var products = await _productService.GetProductsAsync(tab);
             return Ok(products);
         }
 

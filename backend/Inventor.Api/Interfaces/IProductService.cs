@@ -8,7 +8,7 @@ namespace Inventor.Api.Interfaces
 {
     public interface IProductService
     {
-        Task<IEnumerable<ProductDto>> GetProductsAsync();
+        Task<IEnumerable<ProductDto>> GetProductsAsync(string tab);
         Task<ProductDto?> GetProductAsync(Guid id);
         Task<ProductDto> CreateProductAsync(CreateProductRequest request);
         Task UpdateProductAsync(Guid id, UpdateProductRequest request);

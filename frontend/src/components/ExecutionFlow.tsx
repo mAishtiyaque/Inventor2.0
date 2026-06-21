@@ -3,8 +3,9 @@ import { manufacturingApi, ExecutionStatusEnum } from '../api/manufacturingApi';
 import type { ProcessDefinition } from '../api/manufacturingApi';
 import { uiAlert } from '../store/alertStore';
 import { uiLoader } from '../store/loaderStore';
-import { Timer, CheckCircle2, AlertTriangle, ArrowRight, ChevronRight, Trash2 } from 'lucide-react';
-
+import { Timer, CheckCircle2, AlertTriangle, ArrowRight, ChevronRight, Trash2, Package } from 'lucide-react';
+import { productsApi, type Product } from '../api/productsApi';
+import type { OutputDeclaration } from '../api/manufacturingApi';
 interface ExecutionFlowProps {
     definition: ProcessDefinition;
     initialExecutionId?: string;
@@ -29,7 +30,8 @@ export const ExecutionFlow: React.FC<ExecutionFlowProps> = ({
     );
 
     const [plannedQty, setPlannedQty] = useState<number>(0);
-    const [scrapQty, setScrapQty] = useState<number>(0);
+    const [outputs, setOutputs] = useState<OutputDeclaration[]>([]);
+    const [scrapProducts, setScrapProducts] = useState<Product[]>([]);
     const [executionId, setExecutionId] = useState<string | null>(initialExecutionId || null);
 
     useEffect(() => {
@@ -42,9 +44,23 @@ export const ExecutionFlow: React.FC<ExecutionFlowProps> = ({
         uiLoader.show();
         try {
             const response = await manufacturingApi.getExecution(id);
-            setPlannedQty(response.data.plannedQty);
-            setSelectedVersionId(response.data.processDefinitionVersionId);
-            setScrapQty(response.data.scrapQty || 0);
+            const exec = response.data;
+            setPlannedQty(exec.plannedQty);
+            setSelectedVersionId(exec.processDefinitionVersionId);
+            // initialize outputs
+            const initialOutputs = (definition.versions?.find(v => v.id === exec.processDefinitionVersionId)?.iOs || [])
+              .filter(io => io.direction === 1)
+              .map(io => ({
+                productId: io.productId,
+                actualQty: io.standardQty * exec.plannedQty,
+                scrapQty: 0,
+                scrapDestinationProductId: ''
+              }));
+            setOutputs(initialOutputs);
+
+            const ps = await productsApi.getProducts('scrap');
+            setScrapProducts(ps.data);
+
         } catch (error) {
             uiAlert.error("Failed to load execution details");
         } finally {
@@ -79,9 +95,14 @@ export const ExecutionFlow: React.FC<ExecutionFlowProps> = ({
 
         uiLoader.show();
         try {
+            // Convert empty string string to null for API
+            const formattedOutputs = outputs.map(o => ({
+                ...o,
+                scrapDestinationProductId: o.scrapDestinationProductId === '' ? null : o.scrapDestinationProductId
+            }));
             await manufacturingApi.transitionExecution(executionId, {
                 nextStatus: ExecutionStatusEnum.COMPLETED,
-                scrapQty
+                outputs: formattedOutputs
             });
             uiAlert.success("Production completed! Inventory updated.");
             onSuccess();
@@ -209,35 +230,89 @@ export const ExecutionFlow: React.FC<ExecutionFlowProps> = ({
                                     <p className="text-sm text-blue-600 font-medium mt-0.5">Job #{executionId?.split('-')[0].toUpperCase()}</p>
                                 </div>
                             </div>
+                            
+                            <div className="space-y-4 h-[calc(60vh-200px)] overflow-y-auto">
+                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Output Reporting</h4>
+                                
+                                {currentVersion?.iOs?.filter(io => io.direction === 1).map(io => {
+                                    
+                                    const outState = outputs.find(o => o.productId === io.productId);
+                                    if (!outState) return null;
+                                    
+                                    const expectedOutput = (io.standardQty || 0) * plannedQty;
 
-                            <div className="space-y-6">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Planned</p>
-                                        <p className="text-xl font-black text-slate-900">{plannedQty} <span className="text-xs text-slate-400">Units</span></p>
-                                    </div>
-                                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Expected Output</p>
-                                        <p className="text-xl font-black text-slate-900">{(plannedQty - scrapQty).toFixed(0)} <span className="text-xs text-slate-400">Units</span></p>
-                                    </div>
-                                </div>
+                                    return (
+                                        <div key={io.id} className="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                                            <div className="flex justify-between items-center mb-4">
+                                                <div className="flex items-center gap-2">
+                                                    <Package size={16} className="text-indigo-500" />
+                                                    <span className="font-bold text-slate-900">{io.product?.name}</span>
+                                                </div>
+                                                <span className="text-xs font-medium text-slate-500">
+                                                    Expected: {expectedOutput} {io.uom}
+                                                </span>
+                                            </div>
+                                            
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
+                                                        Good Yield
+                                                    </label>
+                                                    <input
+                                                        type="number"
+                                                        value={outState.actualQty}
+                                                        onChange={(e) => {
+                                                            const arr = [...outputs];
+                                                            const idx = arr.findIndex(x => x.productId === io.productId);
+                                                            arr[idx].actualQty = Number(e.target.value);
+                                                            setOutputs(arr);
+                                                        }}
+                                                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-indigo-500 outline-none font-bold"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
+                                                        Scrap Yield
+                                                    </label>
+                                                    <input
+                                                        type="number"
+                                                        value={outState.scrapQty}
+                                                        onChange={(e) => {
+                                                            const arr = [...outputs];
+                                                            const idx = arr.findIndex(x => x.productId === io.productId);
+                                                            arr[idx].scrapQty = Number(e.target.value);
+                                                            setOutputs(arr);
+                                                        }}
+                                                        className="w-full px-4 py-3 bg-red-50/50 border border-red-100 rounded-xl focus:border-red-500 outline-none font-bold text-red-600"
+                                                    />
+                                                </div>
+                                            </div>
 
-                                <div>
-                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">
-                                        Scrap / Loss Quantity
-                                    </label>
-                                    <div className="relative">
-                                        <input
-                                            type="number"
-                                            value={scrapQty || ''}
-                                            onChange={(e) => setScrapQty(Number(e.target.value))}
-                                            className="w-full px-6 py-4 bg-red-50/30 border-2 border-red-100 rounded-2xl focus:border-red-500 outline-none transition-all text-lg font-bold text-red-600"
-                                            placeholder="0"
-                                        />
-                                        <Trash2 className="absolute right-6 top-1/2 -translate-y-1/2 text-red-300" size={20} />
-                                    </div>
-                                    <p className="mt-2 text-[10px] text-slate-400 font-medium">This amount will be subtracted from the final output.</p>
-                                </div>
+                                            {outState.scrapQty > 0 && (
+                                                <div className="mt-4 pt-4 border-t border-slate-200">
+                                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                                                        <Trash2 size={12}/> Scrap Destination Bin (Optional)
+                                                    </label>
+                                                    <select
+                                                        value={outState.scrapDestinationProductId || ''}
+                                                        onChange={(e) => {
+                                                            const arr = [...outputs];
+                                                            const idx = arr.findIndex(x => x.productId === io.productId);
+                                                            arr[idx].scrapDestinationProductId = e.target.value;
+                                                            setOutputs(arr);
+                                                        }}
+                                                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-indigo-500 outline-none text-sm font-medium"
+                                                    >
+                                                        <option value="">-- Do Not Track Physical Scrap --</option>
+                                                        {scrapProducts.map(p => (
+                                                            <option key={p.id} value={p.id}>{p.name} ({p.code})</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
                             </div>
 
                             <button

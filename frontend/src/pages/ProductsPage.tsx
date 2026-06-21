@@ -9,19 +9,19 @@ import { Plus, Search, Filter, Edit2, Trash2, Box, ExternalLink } from 'lucide-r
 import { cn } from '../lib/utils';
 import { CreateProductModal } from '../components/CreateProductModal';
 
-export const ProductsPage: React.FC = () => {
+export const ProductsPage: React.FC<{ tab: string }> = ({ tab }) => {
     const [products, setProducts] = useState<Product[]>([]);
     const [search, setSearch] = useState('');
     const [isCreating, setIsCreating] = useState(false);
 
     useEffect(() => {
         loadProducts();
-    }, []);
+    }, [tab]);
 
     const loadProducts = async () => {
         uiLoader.show();
         try {
-            const resp = await productsApi.getProducts();
+            const resp = await productsApi.getProducts(tab);
             setProducts(resp.data);
         } catch (e) {
             uiAlert.error("Failed to load products");

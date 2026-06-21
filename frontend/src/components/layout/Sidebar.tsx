@@ -7,7 +7,8 @@ import {
     Users,
     Settings2,
     Activity,
-    List as ListIcon
+    List as ListIcon,
+    Recycle
 } from 'lucide-react';
 
 const SidebarItem = ({ to, icon: Icon, label }: { to: string; icon: any; label: string }) => {
@@ -53,6 +54,7 @@ export const Sidebar: React.FC = () => {
                     <nav className="space-y-1">
                         <SidebarItem to="/inventory/raw" icon={Package} label="Raw Materials" />
                         <SidebarItem to="/inventory/products" icon={Layers} label="Products" />
+                        <SidebarItem to="/inventory/scrap" icon={Recycle} label="Scrap" />
                     </nav>
                 </section>
 

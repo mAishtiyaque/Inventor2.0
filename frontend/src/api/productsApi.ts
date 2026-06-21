@@ -76,7 +76,7 @@ export interface Product {
 }
 
 export const productsApi = {
-  getProducts: () => apiClient.get<Product[]>('/products'),
+  getProducts: (tab: string) => apiClient.get<Product[]>('/products', { params: { tab } }),
   getProduct: (id: string) => apiClient.get<Product>(`/products/${id}`),
   createProduct: (data: Partial<Product>) => apiClient.post<Product>('/products', data),
   updateProduct: (id: string, data: Partial<Product>) => apiClient.put(`/products/${id}`, data),

@@ -89,6 +89,13 @@ export type ProcessExecution = {
   costs?: ProcessExecutionCost[];
 };
 
+export type OutputDeclaration = {
+  productId: string;
+  actualQty: number;
+  scrapQty: number;
+  scrapDestinationProductId?: string | null;
+};
+
 export const manufacturingApi = {
   getDefinitions: () => apiClient.get<ProcessDefinition[]>('/manufacturing/definitions'),
   getDefinition: (id: string) => apiClient.get<ProcessDefinition>(`/manufacturing/definitions/${id}`),
@@ -112,6 +119,6 @@ export const manufacturingApi = {
   createExecution: (data: { processDefinitionVersionId: string; plannedQty: number }) => 
     apiClient.post<ProcessExecution>('/manufacturing/executions', data),
     
-  transitionExecution: (id: string, request: { nextStatus: ExecutionStatus; scrapQty?: number; notes?: string }) => 
+  transitionExecution: (id: string, request: { nextStatus: ExecutionStatus; outputs?: OutputDeclaration[]; notes?: string }) => 
     apiClient.post<ProcessExecution>(`/manufacturing/executions/${id}/transition`, request),
 };

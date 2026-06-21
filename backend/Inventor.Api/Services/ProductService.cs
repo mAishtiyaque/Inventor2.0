@@ -21,12 +21,50 @@ namespace Inventor.Api.Services
             _context = context;
         }
 
-        public async Task<IEnumerable<ProductDto>> GetProductsAsync()
+        public async Task<IEnumerable<ProductDto>> GetProductsAsync(string tab)
         {
-            var products = await _context.Products
+            List<Product> products = new List<Product>();
+            if(tab=="all"){
+            products = await _context.Products
                 .Include(p => p.Costs.Where(c => c.IsActive))
                 .Include(p => p.Prices.Where(pr => pr.IsActive))
                 .ToListAsync();
+            }
+            else if (tab=="products"){
+            products = await _context.Products
+                .Where(p => p.ProductType==ProductType.FG || p.ProductType==ProductType.WIP)
+                .Include(p => p.Costs.Where(c => c.IsActive))
+                .Include(p => p.Prices.Where(pr => pr.IsActive))
+                .ToListAsync();
+            }
+            else if (tab=="raw"){
+            products = await _context.Products
+                .Where(p => p.ProductType==ProductType.RAW)
+                .Include(p => p.Costs.Where(c => c.IsActive))
+                .Include(p => p.Prices.Where(pr => pr.IsActive))
+                .ToListAsync();
+            }
+            else if (tab=="wip"){
+            products = await _context.Products
+                .Where(p => p.ProductType==ProductType.WIP)
+                .Include(p => p.Costs.Where(c => c.IsActive))
+                .Include(p => p.Prices.Where(pr => pr.IsActive))
+                .ToListAsync();
+            }
+            else if (tab=="fg"){
+            products = await _context.Products
+                .Where(p => p.ProductType==ProductType.FG)
+                .Include(p => p.Costs.Where(c => c.IsActive))
+                .Include(p => p.Prices.Where(pr => pr.IsActive))
+                .ToListAsync();
+            }
+            else if (tab=="scrap"){
+                products = await _context.Products
+                .Where(p => p.ProductType==ProductType.SCRAP)
+                .Include(p => p.Costs.Where(c => c.IsActive))
+                .Include(p => p.Prices.Where(pr => pr.IsActive))
+                .ToListAsync();
+            }
 
             // return products.Select(p => new ProductDto
             // {

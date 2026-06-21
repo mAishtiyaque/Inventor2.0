@@ -106,10 +106,18 @@ namespace Inventor.Api.Models.DTOs
         public decimal PlannedQty { get; set; }
     }
 
+    public class OutputDeclarationDto
+    {
+        public Guid ProductId { get; set; }
+        public decimal ActualQty { get; set; }
+        public decimal ScrapQty { get; set; }
+        public Guid? ScrapDestinationProductId { get; set; }
+    }
+
     public class TransitionProcessExecutionRequest
     {
         public ExecutionStatus NextStatus { get; set; }
-        public decimal ScrapQty { get; set; }
+        public List<OutputDeclarationDto> Outputs { get; set; } = new();
         public string? Notes { get; set; }
     }
 }

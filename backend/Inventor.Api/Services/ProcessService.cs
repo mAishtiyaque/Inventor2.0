@@ -305,29 +305,55 @@ namespace Inventor.Api.Services
                     }
                 }
 
-                double outputUnitCost = execution.PlannedQty > 0 ? totalInputCost / (double)execution.PlannedQty : 0;
-                double outputUnitCostXproduceQuantitySum = execution.IOs.Aggregate(0.0, ( x ,io) =>{
-                    if(io.Direction == IODirection.OUT)
-                    { 
-                        double ioReqQty = execution.PlannedQty > 0 ? (double)io.PlannedQty / (double)execution.PlannedQty : 1.0;
-                        return x + ioReqQty * (double)io.UnitCost;
+                // Calculate base output values using ActualQty from request to absorb costs
+                double totalExpectedValueofGoodYield = execution.IOs.Aggregate(0.0, (x, io) => {
+                    if (io.Direction == IODirection.OUT)
+                    {
+                        var declaration = request.Outputs?.FirstOrDefault(o => o.ProductId == io.ProductId);
+                        double actualGoodQty = declaration != null ? (double)declaration.ActualQty : (double)io.PlannedQty;
+                        return x + (actualGoodQty * io.UnitCost); // UnitCost here is baseline
                     }
                     return x;
                 });
-                double unitCostCorrectionMultiplier = (double) outputUnitCost / outputUnitCostXproduceQuantitySum;
 
-                // 2. Automate Ledger Entries via LedgerService
+                double unitCostCorrectionMultiplier = totalExpectedValueofGoodYield > 0 ? totalInputCost / totalExpectedValueofGoodYield : 1.0;
+
+                // 2. Automate Ledger Entries via LedgerService & Scrap
                 decimal actualOutputSum = 0;
+                decimal totalScrapSum = 0;
+
                 foreach (var io in execution.IOs)
                 {
                     bool isOutput = io.Direction == IODirection.OUT;
                     if (isOutput)
                     {
-                        var ioReqQty = execution.PlannedQty > 0 ? io.PlannedQty / execution.PlannedQty : 1;
-                        // Scrap should relative to required quantity
-                        io.ActualQty = Math.Max(0, io.PlannedQty - ioReqQty * request.ScrapQty);
+                        var declaration = request.Outputs?.FirstOrDefault(o => o.ProductId == io.ProductId);
+                        if (declaration != null)
+                        {
+                            io.ActualQty = declaration.ActualQty;
+                            totalScrapSum += declaration.ScrapQty;
+
+                            // Handle Physical Scrap Ledger Entry
+                            if (declaration.ScrapQty > 0 && declaration.ScrapDestinationProductId.HasValue)
+                            {
+                                await _ledgerService.CreateEntryAsync(
+                                    declaration.ScrapDestinationProductId.Value,
+                                    declaration.ScrapQty,
+                                    io.Product?.UOM ?? "Units",
+                                    "IN",
+                                    $"PROCESS_EXECUTION_SCRAP",
+                                    0, // Physical scrap enters ledger at zero cost so Good items absorb the cost
+                                    execution.Id
+                                );
+                            }
+                        }
+                        else
+                        {
+                            io.ActualQty = io.PlannedQty;
+                        }
+
                         io.UnitCost = io.UnitCost * unitCostCorrectionMultiplier;
-                        io.ActualCost = (double) io.ActualQty * io.UnitCost;
+                        io.ActualCost = (double)io.ActualQty * io.UnitCost;
                         actualOutputSum += io.ActualQty;
                     }
 
@@ -341,8 +367,8 @@ namespace Inventor.Api.Services
                         execution.Id
                     );
                 }
-                execution.ActualOutputQty = execution.PlannedQty - request.ScrapQty;
-                execution.ScrapQty = request.ScrapQty;
+                execution.ActualOutputQty = actualOutputSum;
+                execution.ScrapQty = totalScrapSum;
                 execution.TotalCost = totalInputCost;
 
                 await _context.SaveChangesAsync();
