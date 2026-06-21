@@ -14,6 +14,7 @@ namespace Inventor.Api.Models.Mapper
                 Id = dto.Id,
                 TenantId = "", // Handled by SaveChanges
                 ProcessDefinitionVersionId = dto.ProcessDefinitionVersionId,
+                VendorId = dto.VendorId,
                 Status = dto.Status,
                 PlannedQty = dto.PlannedQty,
                 ActualOutputQty = dto.ActualOutputQty,

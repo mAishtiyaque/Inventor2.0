@@ -22,6 +22,23 @@ namespace Inventor.Api.Models.Mapper
             };
         }
 
+        public static VendorDto ToDto(this Vendor endor)
+        {
+            return new VendorDto
+            {
+                Id = endor.Id,
+                Code = endor.Code,
+                Name = endor.Name,
+                VendorType = endor.VendorType,
+                ContactName = endor.ContactName,
+                Phone = endor.Phone,
+                Email = endor.Email,
+                Address = endor.Address,
+                IsActive = endor.IsActive,
+                CreatedAt = endor.CreatedAt
+            };
+        }
+
         public static ProductCostDto ToDto(this ProductCost cost)
         {
             return new ProductCostDto
@@ -127,6 +144,7 @@ namespace Inventor.Api.Models.Mapper
                 ProcessDefinitionVersionId = execution.ProcessDefinitionVersionId,
                 ProcessDefinitionVersion = execution.ProcessDefinitionVersion?.ToDto() ?? new(),
                 VendorId = execution.VendorId,
+                Vendor = execution.Vendor?.ToDto(),
                 PlannedQty = execution.PlannedQty,
                 ActualOutputQty = execution.ActualOutputQty,
                 ScrapQty = execution.ScrapQty,

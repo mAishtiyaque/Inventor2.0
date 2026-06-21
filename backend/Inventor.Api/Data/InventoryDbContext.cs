@@ -29,6 +29,8 @@ namespace Inventor.Api.Data
         public DbSet<ProcessExecutionCost> ProcessExecutionCosts { get; set; }
         public DbSet<ProductCost> ProductCosts { get; set; }
         public DbSet<ProductPrice> ProductPrices { get; set; }
+        public DbSet<Vendor> Vendors { get; set; }
+        public DbSet<VendorTransaction> VendorTransactions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -64,7 +66,19 @@ namespace Inventor.Api.Data
             modelBuilder.Entity<ProcessExecution>(entity =>
             {
                 entity.HasKey(e => e.Id);
+                entity.HasOne(e => e.Vendor)
+                    .WithMany(p => p.ProcessExecutions)
+                    .HasForeignKey(e => e.VendorId)
+                    .IsRequired(false);
                 entity.HasQueryFilter(x => x.TenantId == TenantId);
+            });
+
+            // Configure Vendor
+            modelBuilder.Entity<Vendor>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.TenantId, e.Code }).IsUnique();
+                entity.HasQueryFilter(p => p.TenantId == TenantId);
             });
 
             // Configure ProcessDefinitionVersion
@@ -135,6 +149,16 @@ namespace Inventor.Api.Data
                     .WithMany(p => p.Prices)
                     .HasForeignKey(e => e.ProductId);
                 entity.HasQueryFilter(p => p.TenantId == TenantId);
+            });
+
+            // Configure VendorTransaction
+            modelBuilder.Entity<VendorTransaction>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasOne(e => e.Vendor)
+                    .WithMany()
+                    .HasForeignKey(e => e.VendorId);
+                entity.HasQueryFilter(t => t.TenantId == TenantId);
             });
         }
 

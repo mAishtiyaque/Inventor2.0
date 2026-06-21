@@ -11,6 +11,7 @@ namespace Inventor.Api.Models.Entities
         public Guid ProcessDefinitionVersionId { get; set; }
         public ProcessDefinitionVersion? ProcessDefinitionVersion { get; set; }
         public Guid? VendorId { get; set; } // Reference to a broker/vendor if applicable
+        public Vendor? Vendor { get; set; }
         public decimal PlannedQty { get; set; }
         public decimal ActualOutputQty { get; set; }
         public decimal ScrapQty { get; set; }

@@ -34,6 +34,8 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IProcessService, ProcessService>();
 builder.Services.AddScoped<ILedgerService, LedgerService>();
 builder.Services.AddScoped<IReportingService, ReportingService>();
+builder.Services.AddScoped<IVendorService, VendorService>();
+builder.Services.AddScoped<IVendorFinanceService, VendorFinanceService>();
 
 builder.Services.AddCors(options =>
 {

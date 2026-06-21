@@ -3,6 +3,7 @@ using System;
 using Inventor.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Inventor.Api.Migrations
 {
     [DbContext(typeof(InventoryDbContext))]
-    partial class InventoryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260621162713_AddVendor")]
+    partial class AddVendor
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -486,47 +489,6 @@ namespace Inventor.Api.Migrations
                     b.ToTable("Vendors");
                 });
 
-            modelBuilder.Entity("Inventor.Api.Models.Entities.VendorTransaction", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("numeric");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Currency")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Reference")
-                        .HasColumnType("text");
-
-                    b.Property<string>("TenantId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("TransactionDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("TransactionType")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("VendorId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("VendorId");
-
-                    b.ToTable("VendorTransactions");
-                });
-
             modelBuilder.Entity("Inventor.Api.Models.Entities.InventoryLedger", b =>
                 {
                     b.HasOne("Inventor.Api.Models.Entities.ProcessExecution", "ProcessExecution")
@@ -652,17 +614,6 @@ namespace Inventor.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("Inventor.Api.Models.Entities.VendorTransaction", b =>
-                {
-                    b.HasOne("Inventor.Api.Models.Entities.Vendor", "Vendor")
-                        .WithMany()
-                        .HasForeignKey("VendorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Vendor");
                 });
 
             modelBuilder.Entity("Inventor.Api.Models.Entities.ProcessDefinition", b =>

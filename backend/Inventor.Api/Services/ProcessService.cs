@@ -205,6 +205,17 @@ namespace Inventor.Api.Services
 
             if (version.Status == VersionStatus.RETIRED) 
                 throw new BadRequestException("Revision is retired, cannot create execution");
+
+            if (request.VendorId.HasValue)
+            {
+                var endorExists = await _context.Vendors
+                    .AnyAsync(p => p.Id == request.VendorId.Value && p.IsActive);
+
+                if (!endorExists)
+                {
+                    throw new BadRequestException("Selected endor is not active or does not exist");
+                }
+            }
             
             // mark used to not get modified furthur
             version.IsUsed = true;
@@ -214,6 +225,7 @@ namespace Inventor.Api.Services
                 Id = Guid.NewGuid(),
                 TenantId = "", // Handled by SaveChanges
                 ProcessDefinitionVersionId = version.Id,
+                VendorId = request.VendorId,
                 PlannedQty = request.PlannedQty,
                 Status = ExecutionStatus.DRAFT,
                 StartedAt = DateTime.UtcNow,
@@ -509,6 +521,7 @@ namespace Inventor.Api.Services
         {
             var executions = _context.ProcessExecutions
                 .Include(x => x.IOs)
+                .Include(x => x.Vendor)
                 .Include(x => x.ProcessDefinitionVersion)
                 .Include(x => x.ProcessDefinitionVersion)
                     .ThenInclude(v => v!.ProcessDefinition)
@@ -538,6 +551,7 @@ namespace Inventor.Api.Services
                     Costs = x.ProcessDefinitionVersion.Costs.Select(c => c.ToDto()).ToList()
                 },
                 VendorId = x.VendorId,
+                Vendor = x.Vendor == null ? null : x.Vendor.ToDto(),
                 PlannedQty = x.PlannedQty,
                 ActualOutputQty = x.ActualOutputQty,
                 ScrapQty = x.ScrapQty,
@@ -555,6 +569,7 @@ namespace Inventor.Api.Services
             var execution = await _context.ProcessExecutions
                 .Include(x => x.IOs)
                     .ThenInclude(io => io.Product)
+                .Include(x => x.Vendor)
                 .Include(x => x.ProcessDefinitionVersion)
                 .Include(x => x.ProcessDefinitionVersion)
                     .ThenInclude(v => v!.ProcessDefinition)
@@ -588,6 +603,7 @@ namespace Inventor.Api.Services
                     Costs = version.Costs.Select(c => c.ToDto()).ToList()
                 },
                 VendorId = execution.VendorId,
+                Vendor = execution.Vendor?.ToDto(),
                 PlannedQty = execution.PlannedQty,
                 ActualOutputQty = execution.ActualOutputQty,
                 ScrapQty = execution.ScrapQty,

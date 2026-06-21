@@ -12,7 +12,7 @@ namespace Inventor.Api.Controllers
             return Ok(new
             {
                 Status = "Online",
-                Message = "Welcome to Inventor API. The backend is running smoothly.",
+                Message = "Welcome to Inventor API. The backend is running smoothly. Visit https://localhost:7175/swagger/index.html for API documentation.",
                 Timestamp = System.DateTime.UtcNow,
                 Version = "1.0.1"
             });

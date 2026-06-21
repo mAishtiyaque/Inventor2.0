@@ -76,6 +76,7 @@ namespace Inventor.Api.Models.DTOs
         public Guid ProcessDefinitionVersionId { get; set; }
         public ProcessDefinitionVersionDto ProcessDefinitionVersion { get; set; } = new();
         public Guid? VendorId { get; set; }
+        public VendorDto? Vendor { get; set; }
         public decimal PlannedQty { get; set; }
         public decimal ActualOutputQty { get; set; }
         public decimal ScrapQty { get; set; }
@@ -83,8 +84,8 @@ namespace Inventor.Api.Models.DTOs
         public ExecutionStatus Status { get; set; }
         public DateTime StartedAt { get; set; }
         public DateTime? CompletedAt { get; set; }
-        public ICollection<ProcessExecutionIODto> IOs { get; set; } = [];
-        public ICollection<ProcessExecutionCostDto> Costs { get; set; } = [];
+        public ICollection<ProcessExecutionIODto> IOs { get; set; } = new List<ProcessExecutionIODto>();
+        public ICollection<ProcessExecutionCostDto> Costs { get; set; } = new List<ProcessExecutionCostDto>();
     }
 
     public class ProcessExecutionIODto
@@ -103,6 +104,7 @@ namespace Inventor.Api.Models.DTOs
     public class CreateProcessExecutionRequest
     {
         public Guid ProcessDefinitionVersionId { get; set; }
+        public Guid? VendorId { get; set; }
         public decimal PlannedQty { get; set; }
     }
 
