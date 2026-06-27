@@ -47,16 +47,20 @@ namespace Inventor.Api.Services
         {
             var vendor = await _context.Vendors.FirstOrDefaultAsync(v => v.Id == vendorId);
             if (vendor == null) throw new KeyNotFoundException("Vendor not found");
+            var td = request.TransactionDate.HasValue
+                ? DateTime.SpecifyKind(request.TransactionDate.Value, DateTimeKind.Utc)
+                : DateTime.UtcNow;
 
             var tx = new VendorTransaction
             {
                 Id = Guid.NewGuid(),
                 TenantId = vendor.TenantId,
                 VendorId = vendorId,
+                Vendor = vendor,
                 TransactionType = request.TransactionType,
                 Amount = request.Amount,
                 Currency = string.IsNullOrWhiteSpace(request.Currency) ? "INR" : request.Currency,
-                TransactionDate = request.TransactionDate ?? DateTime.UtcNow,
+                TransactionDate = td,
                 Reference = request.Reference,
                 Notes = request.Notes
             };

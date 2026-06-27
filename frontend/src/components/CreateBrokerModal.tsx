@@ -105,7 +105,7 @@ export const CreateBrokerModal: React.FC<CreateBrokerModalProps> = ({
             </div>
             <div>
               <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">
-                Contact
+                Contact Person
               </label>
               <input
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl outline-none"

@@ -226,7 +226,7 @@ export const Overview: React.FC = () => {
                                     dataKey="totalValue"
                                     nameKey="productType"
                                 >
-                                    {(data?.valuations || []).map((entry, index) => (
+                                    {(data?.valuations || []).map((_entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                     <LabelList dataKey="productType" position="insideEnd" />

@@ -17,12 +17,14 @@ namespace Inventor.Api.Services
     {
         private readonly InventoryDbContext _context;
         private readonly ILedgerService _ledgerService;
+        private readonly IVendorFinanceService _vendorFinanceService;
         private readonly ILogger _logger;
 
-        public ProcessService(InventoryDbContext context, ILedgerService ledgerService, ILogger<IProcessService> logger)
+        public ProcessService(InventoryDbContext context, ILedgerService ledgerService, IVendorFinanceService vendorFinanceService, ILogger<IProcessService> logger)
         {
             _context = context;
             _ledgerService = ledgerService;
+            _vendorFinanceService = vendorFinanceService;
             _logger = logger;
         }
 
@@ -229,15 +231,35 @@ namespace Inventor.Api.Services
                 PlannedQty = request.PlannedQty,
                 Status = ExecutionStatus.DRAFT,
                 StartedAt = DateTime.UtcNow,
-                IOs = version.IOs.Select(io => new ProcessExecutionIO
-                {
-                    Id = Guid.NewGuid(),
-                    ProductId = io.ProductId,
-                    Direction = io.Direction,
-                    PlannedQty = io.StandardQty * request.PlannedQty,
-                    ActualQty = 0,
-                    UnitCost = io.Product?.GetAggregateCost() ?? 0
-                }).ToList()
+                IOs = request.IOs != null && request.IOs.Any()
+                    ? request.IOs.Select(io => new ProcessExecutionIO
+                      {
+                          Id = Guid.NewGuid(),
+                          ProductId = io.ProductId,
+                          Direction = io.Direction,
+                          PlannedQty = io.PlannedQty,
+                          ActualQty = 0,
+                          UnitCost = io.UnitCost
+                      }).ToList()
+                    : version.IOs.Select(io => new ProcessExecutionIO
+                      {
+                          Id = Guid.NewGuid(),
+                          ProductId = io.ProductId,
+                          Direction = io.Direction,
+                          PlannedQty = io.StandardQty * request.PlannedQty,
+                          ActualQty = 0,
+                          UnitCost = io.Product?.GetAggregateCost() ?? 0
+                      }).ToList(),
+                Costs = request.Costs != null && request.Costs.Any()
+                    ? request.Costs.Select(c => new ProcessExecutionCost
+                      {
+                          Id = Guid.NewGuid(),
+                          CostType = c.CostType,
+                          Rate = c.Rate,
+                          Quantity = c.Quantity,
+                          TotalCost = c.Rate * (double)c.Quantity
+                      }).ToList()
+                    : new List<ProcessExecutionCost>()
             };
 
             _context.ProcessExecutions.Add(execution);
@@ -295,25 +317,41 @@ namespace Inventor.Api.Services
                     totalInputCost += io.ActualCost;
                 }
 
+                decimal vendorCost = 0; // saved for Vendor Tx creation
                 // Processing costs like Labor, Electricity, Transport etc.
-                if (execution.ProcessDefinitionVersion != null)
+                if (execution.Costs != null && execution.Costs.Any())
+                {
+                    foreach (var cost in execution.Costs)
+                    {
+                        totalInputCost += cost.TotalCost;
+                        if (cost.CostType == CostType.VENDOR)
+                        {
+                            vendorCost = (decimal)cost.TotalCost;
+                        }
+                    }
+                }
+                else if (execution.ProcessDefinitionVersion != null)
                 {
                     foreach (var processingCostDef in execution.ProcessDefinitionVersion.Costs)
                     {
                         double costTotal = processingCostDef.Rate * (double)execution.PlannedQty;
                         totalInputCost += costTotal;
 
-                        _context.ProcessExecutionCosts.Add(new ProcessExecutionCost
+                        var newCost = new ProcessExecutionCost
                         {
                             Id = Guid.NewGuid(),
-                                TenantId = execution.TenantId,
+                            TenantId = execution.TenantId,
                             ProcessExecutionId = execution.Id,
                             CostType = processingCostDef.CostType,
                             Rate = processingCostDef.Rate,
                             Quantity = execution.PlannedQty,
                             TotalCost = costTotal
-                        });
-                        //await _context.ProcessExecutionCosts.AddRangeAsync(processExecutionCosts);
+                        };
+                        _context.ProcessExecutionCosts.Add(newCost);
+                        if (processingCostDef.CostType == CostType.VENDOR)
+                        {
+                            vendorCost = (decimal)costTotal;
+                        }
                     }
                 }
 
@@ -321,7 +359,7 @@ namespace Inventor.Api.Services
                 double totalExpectedValueofGoodYield = execution.IOs.Aggregate(0.0, (x, io) => {
                     if (io.Direction == IODirection.OUT)
                     {
-                        var declaration = request.Outputs?.FirstOrDefault(o => o.ProductId == io.ProductId);
+                        var declaration = request.OutIOs?.FirstOrDefault(o => o.ProductId == io.ProductId);
                         double actualGoodQty = declaration != null ? (double)declaration.ActualQty : (double)io.PlannedQty;
                         return x + (actualGoodQty * io.UnitCost); // UnitCost here is baseline
                     }
@@ -339,7 +377,7 @@ namespace Inventor.Api.Services
                     bool isOutput = io.Direction == IODirection.OUT;
                     if (isOutput)
                     {
-                        var declaration = request.Outputs?.FirstOrDefault(o => o.ProductId == io.ProductId);
+                        var declaration = request.OutIOs?.FirstOrDefault(o => o.ProductId == io.ProductId);
                         if (declaration != null)
                         {
                             io.ActualQty = declaration.ActualQty;
@@ -379,6 +417,23 @@ namespace Inventor.Api.Services
                         execution.Id
                     );
                 }
+
+                // 3. if broker has then credit the amount to broker a/c with Invoce type
+                if (execution.VendorId != null)
+                {
+                    var vtxr = new CreateVendorTransactionRequest()
+                    {
+                        TransactionType = VendorTransactionType.Invoice,
+                        Amount = vendorCost,
+                        Currency = "INR",
+                        TransactionDate = DateTime.UtcNow,
+                        Reference = execution.Id.ToString(),
+                        Notes = "Transaction added by Job Order completion Service."
+                    };
+
+                    await _vendorFinanceService.CreateTransactionAsync(execution.VendorId.Value, vtxr);
+                }
+
                 execution.ActualOutputQty = actualOutputSum;
                 execution.ScrapQty = totalScrapSum;
                 execution.TotalCost = totalInputCost;
@@ -413,6 +468,7 @@ namespace Inventor.Api.Services
                 .Include(d => d.Versions)
                     .ThenInclude(v => v.IOs)
                         .ThenInclude(io => io.Product)
+                            .ThenInclude(p => p!.Costs)
                 .Include(d => d.Versions)
                     .ThenInclude(v => v.Costs)
                 // .Select(d => new ProcessDefinitionDto

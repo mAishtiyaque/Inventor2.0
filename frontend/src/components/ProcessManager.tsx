@@ -68,8 +68,7 @@ export const ProcessManager: React.FC = () => {
 
             {selectedProcess && (
                 <ExecutionFlow
-                    definitionId={selectedProcess.id}
-                    definitionName={selectedProcess.name}
+                    definition={selectedProcess}
                     onCancel={() => setSelectedProcess(null)}
                     onSuccess={() => {
                         setSelectedProcess(null);

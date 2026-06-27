@@ -11,9 +11,9 @@ export const ProductTypeLabel: Record<ProductType, string> = {
 };
 
 //export type CostType = 'MATERIAL' | 'LABOR' | 'MACHINE' | 'ELECTRICITY' | 'PACKAGING' | 'TRANSPORT' | 'OVERHEAD';
-export type CostType = 0 | 1 | 2 | 3 | 4 | 5 | 6
+export type CostType = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7
 
-export const CostTypeValues: CostType[] = [0, 1, 2, 3, 4, 5, 6];
+export const CostTypeValues: CostType[] = [0, 1, 2, 3, 4, 5, 6, 7];
 
 export const CostTypeLabel: Record<CostType, string> = {
   0: 'Material',
@@ -22,7 +22,8 @@ export const CostTypeLabel: Record<CostType, string> = {
   3: 'Electricity',
   4: 'Packaging',
   5: 'Transport',
-  6: 'Overhead'
+  6: 'Overhead',
+  7: 'Vendor'
 };
 
 //export type PriceType = 'WHOLESALE' | 'RETAIL' | 'DISTRIBUTOR' | 'EXPORT';

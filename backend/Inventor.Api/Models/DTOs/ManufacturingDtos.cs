@@ -106,6 +106,23 @@ namespace Inventor.Api.Models.DTOs
         public Guid ProcessDefinitionVersionId { get; set; }
         public Guid? VendorId { get; set; }
         public decimal PlannedQty { get; set; }
+        public List<CreateProcessExecutionIODto>? IOs { get; set; }
+        public List<CreateProcessExecutionCostDto>? Costs { get; set; }
+    }
+
+    public class CreateProcessExecutionIODto
+    {
+        public Guid ProductId { get; set; }
+        public IODirection Direction { get; set; }
+        public decimal PlannedQty { get; set; }
+        public double UnitCost { get; set; }
+    }
+
+    public class CreateProcessExecutionCostDto
+    {
+        public CostType CostType { get; set; }
+        public double Rate { get; set; }
+        public decimal Quantity { get; set; }
     }
 
     public class OutputDeclarationDto
@@ -119,7 +136,7 @@ namespace Inventor.Api.Models.DTOs
     public class TransitionProcessExecutionRequest
     {
         public ExecutionStatus NextStatus { get; set; }
-        public List<OutputDeclarationDto> Outputs { get; set; } = new();
+        public List<OutputDeclarationDto> OutIOs { get; set; } = new();
         public string? Notes { get; set; }
     }
 }

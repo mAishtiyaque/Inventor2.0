@@ -43,9 +43,9 @@ export const InventoryLedgerView: React.FC = () => {
                             <tr key={entry.id} className="hover:bg-slate-50 transition-colors">
                                 <td className="px-6 py-4 font-medium text-slate-900">{entry.productName}</td>
                                 <td className="px-6 py-4">
-                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${entry.direction === 'IN' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${entry.direction === 0 ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
                                         }`}>
-                                        {entry.direction}
+                                        {entry.direction === 0 ? 'IN' : 'OUT'}
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 text-slate-600">{entry.quantity} {entry.uom}</td>

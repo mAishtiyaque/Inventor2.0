@@ -48,7 +48,7 @@ export const CreateRevisionModal: React.FC<CreateRevisionModalProps> = ({
 
     const loadProducts = async () => {
         try {
-            const resp = await productsApi.getProducts();
+            const resp = await productsApi.getProducts('all');
             setProducts(resp.data);
         } catch (e) {
             uiAlert.error("Failed to load products for BOM selection");

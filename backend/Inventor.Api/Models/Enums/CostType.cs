@@ -8,6 +8,7 @@ namespace Inventor.Api.Models.Enums
         ELECTRICITY,
         PACKAGING,
         TRANSPORT,
-        OVERHEAD
+        OVERHEAD,
+        VENDOR
     }
 }

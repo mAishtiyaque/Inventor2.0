@@ -67,7 +67,7 @@ namespace Inventor.Api.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("InventoryLedgers");
+                    b.ToTable("InventoryLedgers", (string)null);
                 });
 
             modelBuilder.Entity("Inventor.Api.Models.Entities.ProcessCostDefinition", b =>
@@ -96,7 +96,7 @@ namespace Inventor.Api.Migrations
 
                     b.HasIndex("ProcessDefinitionVersionId");
 
-                    b.ToTable("ProcessCostDefinitions");
+                    b.ToTable("ProcessCostDefinitions", (string)null);
                 });
 
             modelBuilder.Entity("Inventor.Api.Models.Entities.ProcessDefinition", b =>
@@ -118,7 +118,7 @@ namespace Inventor.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ProcessDefinitions");
+                    b.ToTable("ProcessDefinitions", (string)null);
                 });
 
             modelBuilder.Entity("Inventor.Api.Models.Entities.ProcessDefinitionVersion", b =>
@@ -156,7 +156,7 @@ namespace Inventor.Api.Migrations
 
                     b.HasIndex("ProcessDefinitionId");
 
-                    b.ToTable("ProcessDefinitionVersions");
+                    b.ToTable("ProcessDefinitionVersions", (string)null);
                 });
 
             modelBuilder.Entity("Inventor.Api.Models.Entities.ProcessExecution", b =>
@@ -202,7 +202,7 @@ namespace Inventor.Api.Migrations
 
                     b.HasIndex("VendorId");
 
-                    b.ToTable("ProcessExecutions");
+                    b.ToTable("ProcessExecutions", (string)null);
                 });
 
             modelBuilder.Entity("Inventor.Api.Models.Entities.ProcessExecutionCost", b =>
@@ -234,7 +234,7 @@ namespace Inventor.Api.Migrations
 
                     b.HasIndex("ProcessExecutionId");
 
-                    b.ToTable("ProcessExecutionCosts");
+                    b.ToTable("ProcessExecutionCosts", (string)null);
                 });
 
             modelBuilder.Entity("Inventor.Api.Models.Entities.ProcessExecutionIO", b =>
@@ -274,7 +274,7 @@ namespace Inventor.Api.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProcessExecutionIOs");
+                    b.ToTable("ProcessExecutionIOs", (string)null);
                 });
 
             modelBuilder.Entity("Inventor.Api.Models.Entities.ProcessIODefinition", b =>
@@ -311,7 +311,7 @@ namespace Inventor.Api.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProcessIODefinitions");
+                    b.ToTable("ProcessIODefinitions", (string)null);
                 });
 
             modelBuilder.Entity("Inventor.Api.Models.Entities.Product", b =>
@@ -347,7 +347,7 @@ namespace Inventor.Api.Migrations
                     b.HasIndex("TenantId", "Code")
                         .IsUnique();
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", (string)null);
                 });
 
             modelBuilder.Entity("Inventor.Api.Models.Entities.ProductCost", b =>
@@ -391,7 +391,7 @@ namespace Inventor.Api.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProductCosts");
+                    b.ToTable("ProductCosts", (string)null);
                 });
 
             modelBuilder.Entity("Inventor.Api.Models.Entities.ProductPrice", b =>
@@ -435,7 +435,7 @@ namespace Inventor.Api.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProductPrices");
+                    b.ToTable("ProductPrices", (string)null);
                 });
 
             modelBuilder.Entity("Inventor.Api.Models.Entities.Vendor", b =>
@@ -483,7 +483,7 @@ namespace Inventor.Api.Migrations
                     b.HasIndex("TenantId", "Code")
                         .IsUnique();
 
-                    b.ToTable("Vendors");
+                    b.ToTable("Vendors", (string)null);
                 });
 
             modelBuilder.Entity("Inventor.Api.Models.Entities.VendorTransaction", b =>
@@ -524,7 +524,7 @@ namespace Inventor.Api.Migrations
 
                     b.HasIndex("VendorId");
 
-                    b.ToTable("VendorTransactions");
+                    b.ToTable("VendorTransactions", (string)null);
                 });
 
             modelBuilder.Entity("Inventor.Api.Models.Entities.InventoryLedger", b =>

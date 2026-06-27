@@ -104,6 +104,11 @@ export const ActiveExecutionsPage: React.FC = () => {
                                                 </p>
                                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">
                                                     V{exec.processDefinitionVersion?.versionNumber}
+                                                    {exec.vendor?.name && (
+                                                        <span className="text-indigo-500 normal-case not-italic ml-1">
+                                                            · {exec.vendor.name}
+                                                        </span>
+                                                    )}
                                                 </p>
                                             </div>
                                         </td>

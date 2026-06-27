@@ -1,5 +1,4 @@
 import { apiClient } from "./apiClient";
-import type { Vendor } from "./vendorApi";
 
 export type VendorTransaction = {
   id: string;

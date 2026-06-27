@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { vendorApi } from "../../api/vendorApi";
 import type { Vendor } from "../../api/vendorApi";
 import { uiLoader } from "../../store/loaderStore";
@@ -130,7 +130,7 @@ export const BrokersPage: React.FC = () => {
                   Type
                 </th>
                 <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">
-                  Contact
+                  Contact Person
                 </th>
                 <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">
                   Phone

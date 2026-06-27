@@ -48,7 +48,11 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.OperationFilter<TenantHeaderOperationFilter>();
+});
+
 // Add services to the container.
 builder.Services.AddControllers();
 
